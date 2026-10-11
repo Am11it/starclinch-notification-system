@@ -76,6 +76,25 @@ def cron_inactivity_check(request):
     return Response({"notified": services.check_inactive_users()})
 
 
+@api_view(["GET"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def status(request):
+    """Public health check: which providers are configured (yes/no only, never the keys)."""
+    from django.contrib.auth.models import User
+
+    return Response({
+        "email_resend": bool(settings.RESEND_API_KEY),
+        "email_from": settings.RESEND_FROM_EMAIL,
+        "webpush_onesignal": bool(settings.ONESIGNAL_APP_ID and settings.ONESIGNAL_REST_API_KEY),
+        "whatsapp": bool(settings.WHATSAPP_ACCESS_TOKEN and settings.PHONE_NUMBER_ID),
+        "admin_exists": User.objects.filter(is_staff=True).exists(),
+        "triggers": Trigger.objects.count(),
+        "enabled_templates": Template.objects.filter(enabled=True).count(),
+        "cors_allowed_origins": settings.CORS_ALLOWED_ORIGINS,
+    })
+
+
 # ---------- Website: fire any trigger (e.g. "order_placed") ----------
 
 @api_view(["POST"])

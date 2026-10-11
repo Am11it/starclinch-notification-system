@@ -14,4 +14,5 @@ urlpatterns = [
     path("admin/run-inactivity-check/", views.run_inactivity_check),
     path("events/fire/", views.fire_event),
     path("cron/inactivity-check/", views.cron_inactivity_check),
+    path("status/", views.status),
 ]
