@@ -3,6 +3,7 @@ services:
   - type: web
     name: starclinch-notify-api
     runtime: python
+    plan: free
     rootDir: backend
     buildCommand: ./build.sh
     startCommand: gunicorn config.wsgi:application
