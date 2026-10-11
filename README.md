@@ -116,7 +116,7 @@ Email provider used: **Resend** (`backend/notifications/senders/email.py`).
 ## Deploy
 
 - **Backend → Render**: New → Blueprint → this repo (uses `render.yaml`), then fill in the env vars.
-  Or create a Web Service manually with root `backend`, build `./build.sh`, start `gunicorn config.wsgi:application`.
+  Or create a Web Service manually with root `backend`, build `./build.sh`, start `gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --timeout 120`.
 - **Frontend → Vercel**: import repo, root directory `frontend`, set `VITE_API_URL` (Render URL) and
   `VITE_ONESIGNAL_APP_ID`. `vercel.json` makes page refreshes work on routes like `/admin`.
 - Put the Vercel URL into the backend's `CORS_ALLOWED_ORIGINS`.
