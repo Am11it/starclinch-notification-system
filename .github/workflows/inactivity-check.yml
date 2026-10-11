@@ -1,0 +1,20 @@
+# Free scheduler for the "Not logged in for 1 day / 1 week" triggers.
+# Render's free plan has no cron, so GitHub calls our backend every hour.
+# Repo -> Settings -> Secrets and variables -> Actions -> add:
+#   BACKEND_URL  = https://your-backend.onrender.com
+#   CRON_SECRET  = same value as CRON_SECRET on Render
+name: Inactivity check
+
+on:
+  schedule:
+    - cron: "0 * * * *" # every hour
+  workflow_dispatch: # "Run workflow" button for manual tests
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call backend
+        run: |
+          curl --fail --max-time 120 -X POST "${{ secrets.BACKEND_URL }}/api/cron/inactivity-check/" \
+            -H "X-Cron-Secret: ${{ secrets.CRON_SECRET }}"
