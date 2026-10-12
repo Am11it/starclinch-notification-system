@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 from django.db import connection
 from django.utils import timezone
 
-from .models import NotificationLog, Template, Trigger
+from .models import NotificationLog, Template, Trigger, WhatsAppStatus
 from .senders import email, webpush, whatsapp
 
 # Matches {{name}}, {{ email }}, ...
@@ -171,6 +171,10 @@ def save_whatsapp_statuses(payload):
                     error = errors[0]
                     reason = error.get("error_data", {}).get("details") or error.get("message") or error.get("title", "")
                     text = f"failed: {error.get('code')} {reason}"
+                WhatsAppStatus.objects.create(
+                    message_id=status["id"], status=status.get("status", ""),
+                    error=text[len("failed: "):][:500] if errors else "",
+                )
                 fields = {"delivery_status": text[:255]}
                 if errors:
                     fields["success"] = False

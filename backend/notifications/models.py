@@ -68,3 +68,15 @@ class NotificationLog(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+
+class WhatsAppStatus(models.Model):
+    """Every status Meta's webhook reports (also for messages sent from Meta's dashboard), for debugging."""
+
+    message_id = models.CharField(max_length=200)
+    status = models.CharField(max_length=30)  # sent / delivered / read / failed
+    error = models.CharField(max_length=500, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]

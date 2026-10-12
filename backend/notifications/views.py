@@ -11,7 +11,7 @@ from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 
 from . import services
-from .models import NotificationLog, Template, Trigger
+from .models import NotificationLog, Template, Trigger, WhatsAppStatus
 from .serializers import NotificationLogSerializer, TemplateSerializer, TriggerSerializer
 
 
@@ -109,6 +109,11 @@ def status(request):
                 "error": "" if log.success else re.sub(r"\d{8,}", "<number>", log.response)[:200],
             }
             for log in NotificationLog.objects.filter(channel="whatsapp").select_related("trigger")[:5]
+        ],
+        # What Meta's webhook reported lately (any message, incl. ones sent from Meta's dashboard)
+        "last_webhook_statuses": [
+            {"time": w.created_at.strftime("%d %b %H:%M:%S UTC"), "status": w.status, "error": w.error}
+            for w in WhatsAppStatus.objects.all()[:5]
         ],
     })
 
