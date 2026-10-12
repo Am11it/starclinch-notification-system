@@ -17,9 +17,15 @@ function withOneSignal(callback) {
   });
 }
 
+// Remember whether OneSignal started, so the button can show the real error
+let initResult = Promise.resolve();
+
 export function initPush() {
   if (!CONFIGURED) return;
-  withOneSignal((OneSignal) => OneSignal.init({ appId: APP_ID, allowLocalhostAsSecureOrigin: true }));
+  initResult = withOneSignal((OneSignal) =>
+    OneSignal.init({ appId: APP_ID, allowLocalhostAsSecureOrigin: true })
+  );
+  initResult.catch(console.error);
 }
 
 // Link this browser to our user id, so the backend can send to "external_id = user.id"
@@ -34,6 +40,12 @@ export async function enablePush() {
     throw new Error(
       "Web Push is not set up yet: put your OneSignal App ID in frontend/.env (VITE_ONESIGNAL_APP_ID) and restart the frontend."
     );
+  }
+  try {
+    await initResult;
+  } catch (error) {
+    // e.g. "Can only be used on: https://..." -> Site URL in OneSignal doesn't match this site
+    throw new Error(`OneSignal could not start: ${error.message}. Check the Site URL in OneSignal settings.`);
   }
   return withOneSignal(async (OneSignal) => {
     await OneSignal.Notifications.requestPermission();
