@@ -132,6 +132,9 @@ def sync_whatsapp_template(template):
         template.wa_version += 1
         name = f"{template.trigger.key}_{template.id}_v{template.wa_version}".replace("-", "_").lower()
         ok, data = whatsapp.create_template(name, body, [VARIABLES.get(n, "test") for n in names])
+        if not ok and (existing := whatsapp.find_template(name)):
+            # Same name already submitted (e.g. by the local copy of this app) -> reuse it
+            ok, data = True, existing
         if not ok:
             template.save(update_fields=["wa_version"])
             error = data.get("error", {})

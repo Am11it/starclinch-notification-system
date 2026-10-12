@@ -53,8 +53,8 @@ export default function TemplateModal({ template, triggerName, variables, onClos
         {form.channel === "whatsapp" && (
           <p className="muted">
             After saving, press <b>Sync</b> to send it to Meta for approval, and again until it says
-            APPROVED. Editing the text needs a new approval. Meta does not allow a variable at the very
-            start or end of the message.
+            APPROVED. Editing the text needs a new approval. Meta rules: no variable at the very start or
+            end of the message, and avoid "login" / "password" wording (Meta rejects it as the wrong category).
           </p>
         )}
         {form.channel === "webpush" && (

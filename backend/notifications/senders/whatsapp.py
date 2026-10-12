@@ -5,7 +5,7 @@ from django.conf import settings
 
 from . import to_result
 
-GRAPH_URL = "https://graph.facebook.com/v21.0"
+GRAPH_URL = "https://graph.facebook.com/v25.0"
 LANGUAGE = "en_US"
 
 
@@ -61,6 +61,14 @@ def create_template(name, body, examples):
     url = f"{GRAPH_URL}/{settings.WHATSAPP_BUSINESS_ACCOUNT_ID}/message_templates"
     response = requests.post(url, json=payload, headers=_headers(), timeout=15)
     return response.ok, response.json()
+
+
+def find_template(name):
+    """Look up a template we (or another copy of this app) already submitted with this name."""
+    url = f"{GRAPH_URL}/{settings.WHATSAPP_BUSINESS_ACCOUNT_ID}/message_templates"
+    response = requests.get(url, params={"name": name, "fields": "id,name,status"}, headers=_headers(), timeout=15)
+    matches = [t for t in response.json().get("data", []) if t.get("name") == name] if response.ok else []
+    return matches[0] if matches else None
 
 
 def get_template_status(template_id):
