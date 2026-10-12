@@ -18,6 +18,8 @@ from .senders import email, webpush, whatsapp
 
 # Matches {{name}}, {{ email }}, ...
 VARIABLE = re.compile(r"{{\s*(\w+)\s*}}")
+# Meta's message id in a send response: "id":"wamid.HBgM..."
+MESSAGE_ID = re.compile(r'"id":"(wamid\.[^"]+)"')
 
 # Variables admins can use in any template, with example values (Meta needs examples).
 VARIABLES = {
@@ -74,9 +76,11 @@ def send_one(template, user, is_test=False, phone=None, to_email=None):
         recipient = f"user #{user.id}"
         success, detail = webpush.send_push(user.id, render(template.title, context), body)
 
+    message_id = MESSAGE_ID.search(detail) if template.channel == Template.WHATSAPP else None
     NotificationLog.objects.create(
         trigger=template.trigger, channel=template.channel, user=user,
         recipient=recipient, success=success, is_test=is_test, response=detail,
+        message_id=message_id.group(1) if message_id else "",
     )
     return success, detail
 
@@ -151,6 +155,27 @@ def sync_whatsapp_template(template):
 
     template.save()
     return True, template.wa_status
+
+
+def save_whatsapp_statuses(payload):
+    """Webhook from Meta: update the log rows with sent / delivered / read / failed (+ reason)."""
+    updated = 0
+    for entry in payload.get("entry", []):
+        for change in entry.get("changes", []):
+            for status in change.get("value", {}).get("statuses", []):
+                if not status.get("id"):
+                    continue
+                text = status.get("status", "")
+                errors = status.get("errors") or []
+                if errors:
+                    error = errors[0]
+                    reason = error.get("error_data", {}).get("details") or error.get("message") or error.get("title", "")
+                    text = f"failed: {error.get('code')} {reason}"
+                fields = {"delivery_status": text[:255]}
+                if errors:
+                    fields["success"] = False
+                updated += NotificationLog.objects.filter(message_id=status.get("id")).update(**fields)
+    return updated
 
 
 # ---------- "Not logged in for X" triggers ----------

@@ -97,6 +97,9 @@ CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 WHATSAPP_ACCESS_TOKEN = env_key("WHATSAPP_ACCESS_TOKEN")
 PHONE_NUMBER_ID = env_key("PHONE_NUMBER_ID")
 WHATSAPP_BUSINESS_ACCOUNT_ID = env_key("WHATSAPP_BUSINESS_ACCOUNT_ID")
+# Webhook: any text you choose (also typed into Meta), and optionally the App Secret to check signatures
+WHATSAPP_VERIFY_TOKEN = env_key("WHATSAPP_VERIFY_TOKEN")
+WHATSAPP_APP_SECRET = env_key("WHATSAPP_APP_SECRET")
 RESEND_API_KEY = env_key("RESEND_API_KEY")
 RESEND_FROM_EMAIL = env_key("RESEND_FROM_EMAIL") or "onboarding@resend.dev"
 ONESIGNAL_APP_ID = env_key("ONESIGNAL_APP_ID")

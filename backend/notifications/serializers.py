@@ -47,4 +47,4 @@ class NotificationLogSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NotificationLog
-        fields = ["id", "trigger", "channel", "user", "recipient", "success", "is_test", "response", "created_at"]
+        fields = ["id", "trigger", "channel", "user", "recipient", "success", "is_test", "response", "delivery_status", "created_at"]

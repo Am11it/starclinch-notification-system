@@ -61,6 +61,9 @@ class NotificationLog(models.Model):
     success = models.BooleanField(default=False)
     is_test = models.BooleanField(default=False)
     response = models.TextField(blank=True)
+    # WhatsApp only: Meta's message id, and what its webhook later told us (sent / delivered / read / failed)
+    message_id = models.CharField(max_length=200, blank=True, db_index=True)
+    delivery_status = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

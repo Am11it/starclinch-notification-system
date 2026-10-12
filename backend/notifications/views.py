@@ -1,4 +1,9 @@
+import hashlib
+import hmac
+import json
+
 from django.conf import settings
+from django.http import HttpResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action, api_view, authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny, IsAdminUser
@@ -88,11 +93,38 @@ def status(request):
         "email_from": settings.RESEND_FROM_EMAIL,
         "webpush_onesignal": bool(settings.ONESIGNAL_APP_ID and settings.ONESIGNAL_REST_API_KEY),
         "whatsapp": bool(settings.WHATSAPP_ACCESS_TOKEN and settings.PHONE_NUMBER_ID),
+        "whatsapp_webhook": bool(settings.WHATSAPP_VERIFY_TOKEN),
         "admin_exists": User.objects.filter(is_staff=True).exists(),
         "triggers": Trigger.objects.count(),
         "enabled_templates": Template.objects.filter(enabled=True).count(),
         "cors_allowed_origins": settings.CORS_ALLOWED_ORIGINS,
     })
+
+
+@api_view(["GET", "POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def whatsapp_webhook(request):
+    """Meta calls this. GET = one-time check when you save the webhook, POST = message status updates."""
+    if request.method == "GET":
+        if (
+            settings.WHATSAPP_VERIFY_TOKEN
+            and request.GET.get("hub.mode") == "subscribe"
+            and request.GET.get("hub.verify_token") == settings.WHATSAPP_VERIFY_TOKEN
+        ):
+            return HttpResponse(request.GET.get("hub.challenge", ""))  # Meta wants it back as plain text
+        return HttpResponse("Verify token mismatch", status=403)
+
+    # If WHATSAPP_APP_SECRET is set, only accept requests really signed by Meta
+    if settings.WHATSAPP_APP_SECRET:
+        expected = "sha256=" + hmac.new(
+            settings.WHATSAPP_APP_SECRET.encode(), request.body, hashlib.sha256
+        ).hexdigest()
+        if not hmac.compare_digest(expected, request.headers.get("X-Hub-Signature-256", "")):
+            return HttpResponse("Bad signature", status=403)
+
+    services.save_whatsapp_statuses(json.loads(request.body or b"{}"))
+    return HttpResponse("ok")  # always 200 quickly, or Meta keeps retrying
 
 
 # ---------- Website: fire any trigger (e.g. "order_placed") ----------

@@ -15,4 +15,5 @@ urlpatterns = [
     path("events/fire/", views.fire_event),
     path("cron/inactivity-check/", views.cron_inactivity_check),
     path("status/", views.status),
+    path("whatsapp/webhook/", views.whatsapp_webhook),
 ]

@@ -137,7 +137,7 @@ export default function AdminNotifications() {
       <div className="table-wrap">
         <table className="logs">
           <thead>
-            <tr><th>Time</th><th>Trigger</th><th>Channel</th><th>To</th><th>Result</th></tr>
+            <tr><th>Time</th><th>Trigger</th><th>Channel</th><th>To</th><th>Result</th><th>Delivery</th></tr>
           </thead>
           <tbody>
             {logs.map((log) => (
@@ -148,6 +148,9 @@ export default function AdminNotifications() {
                 <td>{log.recipient}</td>
                 <td className={log.success ? "success" : "error"} title={log.response}>
                   {log.success ? "Sent" : "Failed"} — {log.response.slice(0, 80)}
+                </td>
+                <td className={log.delivery_status.startsWith("failed") ? "error" : ""}>
+                  {log.delivery_status || (log.channel === "whatsapp" ? "waiting…" : "—")}
                 </td>
               </tr>
             ))}
