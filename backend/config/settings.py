@@ -10,7 +10,9 @@ load_dotenv(BASE_DIR / ".env")
 
 def env_key(name):
     """Read a provider key; placeholders copied from .env.example (your_...) count as empty."""
-    value = os.getenv(name, "").strip()
+    value = os.getenv(name, "").strip().strip("'\"").strip()
+    if value.startswith("Bearer "):  # pasted straight from Meta's curl example
+        value = value[len("Bearer "):].strip()
     return "" if value.startswith("your_") else value
 
 
