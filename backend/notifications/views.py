@@ -1,4 +1,5 @@
 import hashlib
+import re
 import hmac
 import json
 
@@ -98,6 +99,17 @@ def status(request):
         "triggers": Trigger.objects.count(),
         "enabled_templates": Template.objects.filter(enabled=True).count(),
         "cors_allowed_origins": settings.CORS_ALLOWED_ORIGINS,
+        # Last WhatsApp sends, for debugging delivery (no phone numbers or message text)
+        "last_whatsapp": [
+            {
+                "time": log.created_at.strftime("%d %b %H:%M:%S UTC"),
+                "trigger": log.trigger.key if log.trigger else "",
+                "accepted_by_meta": log.success,
+                "delivery": log.delivery_status or "no webhook update yet",
+                "error": "" if log.success else re.sub(r"\d{8,}", "<number>", log.response)[:200],
+            }
+            for log in NotificationLog.objects.filter(channel="whatsapp").select_related("trigger")[:5]
+        ],
     })
 
 
